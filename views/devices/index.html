@@ -1,0 +1,50 @@
+{{response.title = "ioThings - My Devices"}}
+{{extend 'layout.html'}}
+{{include 'toggle_switch.html'}}
+
+<div class="page-header">
+    <h2>My Devices
+        <a class="right" href="{{=URL('devices', 'form')}}">
+        <button type="button" class="btn btn-info">
+        <span class="glyphicon glyphicon-plus"></span> new device
+        </button>
+        </a>
+    </h2>
+</div>
+
+{{if len(rows) == 0:}}
+<div class="alert alert-danger" role="alert">Sorry, you do not have any devices on your account. Add a device to explore.</div>
+{{else:}}
+<div class="row">
+    {{for row in rows:}}
+    {{
+        deviceHref = URL('devices', 'view', args= row.user_device.id)
+        checked_property = 'checked' if row.user_device.is_on else ''
+    }}
+    <div id="{{=row.user_device.id}}" class="col-md-3">
+        <div class="thumbnail">
+            <button type="button" data-device-id="{{=row.user_device.id}}" class="close">&times;</button>
+            <a href="{{=deviceHref}}">
+            <img class="product-icon" src="{{=URL('default', 'download', args=row.devices.picture)}}" alt="Device image" />
+            </a>
+            <div class="caption">
+                <h3 class="cropped-text">{{=row.user_device.name}}</h3>
+                <p class="cropped-text">{{=row.user_device.description}}</p>
+                <p><span class="label label-primary">{{=row.devices.name}}</span></p>
+                <p>
+                    <input type="checkbox" data-user-device-id="{{=row.user_device.id}}" data-inverse="true" data-on-color="success" data-off-color="danger" data-size="mini" {{=checked_property}}>
+                </p>
+                <p>
+                    <a class="btn btn-warning" href="{{=URL('devices', 'form', args = row.user_device.id)}}">
+                    <span class="glyphicon glyphicon-edit"></span> Edit
+                    </a>
+                    <a class="btn btn-default right" href="{{=deviceHref}}">
+                    <span class="glyphicon glyphicon-menu-right"></span> View
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+    {{pass}}
+</div>
+{{pass}}

@@ -1,0 +1,14 @@
+{{response.title = "ioThings - Home"}}
+{{extend 'layout.html'}}
+
+<div class="container">
+	<div class="jumbotron">
+		<h1>ioThings</h1>
+		{{if auth.is_logged_in():}}
+			<p>Welcome back, {{=auth.user.first_name}} {{=auth.user.last_name}}.</p>
+			<p>Click <a href="{{=URL('devices', 'index')}}">here</a> to view all your devices</p>
+		{{else:}}
+			<p>Please sign in to gain access to this website. Click to <a href="{{=URL('default', 'user')}}">Log in</a></p>
+		{{pass}}
+	</div>
+</div>

@@ -1,0 +1,161 @@
+{{response.title = 'iThings - 404' if user_device is None else user_device.name}}
+{{extend 'layout.html'}}
+{{include 'chart.html'}}
+{{include 'toggle_switch.html'}}
+
+<script>
+$(function() {
+    var ctx = $("#myChart");
+
+    var myLineChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "Novemeber", "December"],
+            datasets: [{
+                label: "Temperature °c",
+                fill: false,
+                lineTension: 0.1,
+                backgroundColor: "rgba(75,192,192,0.4)",
+                borderColor: "rgba(75,192,192,1)",
+                borderCapStyle: 'butt',
+                borderDash: [],
+                borderDashOffset: 0.0,
+                borderJoinStyle: 'miter',
+                pointBorderColor: "rgba(75,192,192,1)",
+                pointBackgroundColor: "#fff",
+                pointBorderWidth: 1,
+                pointHoverRadius: 5,
+                pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                pointHoverBorderColor: "rgba(220,220,220,1)",
+                pointHoverBorderWidth: 2,
+                pointRadius: 1,
+                pointHitRadius: 10,
+                data: [65, 59, 80, 81, 56, 55, 40, 67, 45, 64, 67, 82],
+                spanGaps: true,
+            }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Temperature'
+                    }
+                }],
+                xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Time'
+                    }
+                }],
+            }
+        }
+    });
+
+    var counter = 0;
+
+    $(ctx).on("click", function() {
+        setInterval(function() {
+            myLineChart.data.datasets[0].data.splice(0, 1);
+            myLineChart.data.labels.splice(0, 1);
+
+            myLineChart.data.datasets[0].data.push(random());
+            myLineChart.data.labels.push("new " + counter++);
+            myLineChart.update();
+
+        }, 2000);
+    });
+
+    function random() {
+        return Math.floor((Math.random() * 100) + 60);
+    }
+
+    $.ajax({
+        url: "/things/api/device_data/",
+        type: "GET",
+        beforeSend: function() {
+            //Code here
+            return true;
+        },
+        success: function(json) {
+            var responseJson = null;
+
+            try {
+                responseJson = JSON.parse(json);
+            } catch (ex) {
+                console.log(ex);
+            }
+        },
+        error: function(xhr, textStatus, errorThrown) {
+            var alertMsg = "A " + xhr.status + "<strong>[" + xhr.statusText + "]</strong> network error has occurred";
+        },
+        complete: function() {}
+    });
+});
+</script>
+
+{{if user_device is None:}}
+<div class="alert alert-danger" role="alert">Sorry, either you're not authorized to view this device or the device you're looking for does not exist.</div>
+{{else:}}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-2">
+            <div class="panel panel-default">
+                <div class="panel-heading">{{=user_device.name}}</div>
+                <div class="panel-body">
+                    <label>Power </label>
+                    <p>
+                        <input type="checkbox" data-user-device-id="{{=user_device.id}}" data-inverse="true" data-on-color="success" data-off-color="danger" data-size="mini" {{='checked' if user_device.is_on else ''}}>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4 col-md-3 col-lg-2">
+            <div class="panel panel-default collapseable">
+                <!-- Default panel contents -->
+                <div class="panel-heading">Statistics
+                    <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
+                </div>
+                <div class="panel-body">
+                    <div class="container">
+                        <p>
+                            <b>Temperate: </b> <code>23.5°c</code>
+                        </p>
+                        <p>
+                            <b>Colour: </b> <code>#45253</code>
+                        </p>
+                        <p>
+                            <b>Current: </b> <code>43mA</code>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-5">
+        <div class="panel panel-default collapseable">
+            <div class="panel-heading">Graph #1
+                <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
+            </div>
+            <div class="panel-body">
+                <canvas id="myChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-1">
+        <div class="panel panel-default collapseable">
+            <div class="panel-heading">Graph #2
+                <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
+            </div>
+            <div class="panel-body">
+                <canvas id="myChart2" width="1" height="1"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{{pass}}

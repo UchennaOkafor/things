@@ -1,0 +1,51 @@
+<script src="{{=URL('static','bootstrap-switch/js/bootstrap-switch.min.js')}}"></script>
+<link rel="stylesheet" href="{{=URL('static','bootstrap-switch/css/bootstrap-switch.min.css')}}">
+
+<script>
+$(function() {
+    var checkBoxes = $("[type='checkbox']");
+    checkBoxes.bootstrapSwitch();
+
+    checkBoxes.on('switchChange.bootstrapSwitch', function(event, state) {
+        var checkBox = $(this);
+
+        $.ajax({
+            url: "/things/api/device_power/",
+            type: "POST",
+            timeout: 10000,
+            beforeSend: function() {
+                checkBox.bootstrapSwitch("disabled", true);
+            },
+            data: {
+                device_id: $(this).attr("data-user-device-id"),
+                is_on: state
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                checkBox.bootstrapSwitch("state", !state, true);
+            },
+            complete: function() {
+                checkBox.bootstrapSwitch("disabled", false);
+            }
+        });
+    });
+
+    $(".close").on("click", function() {
+        var id = $(this).attr("data-device-id");
+
+        $.ajax({
+            url: "/things/api/device_delete/",
+            type: "POST",
+            timeout: 10000,
+            data: {
+                device_id: id
+            },
+            success: function(response) {
+                $("#" + id).remove();
+            },
+            error: function(xhr, textStatus, errorThrown) {
+
+            }
+        });
+    });
+});
+</script>

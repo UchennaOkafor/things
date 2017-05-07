@@ -1,0 +1,53 @@
+{{
+    action = "Add" if action_add else "Edit"
+    response.title = "iThings - " + action
+}}
+{{extend 'layout.html'}}
+
+<p>
+    <a href="{{=URL('devices', 'index')}}">
+        <button type="button" class="btn btn-primary">
+            <span class="glyphicon glyphicon-arrow-left"></span> Back
+        </button>
+    </a>
+</p>
+
+{{ if devices is None or len(devices) == 0:}}
+<div class="alert alert-danger" role="alert">Sorry, no device types have been currently setup. Please contact the site admin.</div>
+{{else:}}
+<div class="container">
+    <div class="col-xs-12 col-sm-8 col-md-6 col-lg-6 col-md-offset-3 col-sm-offset-2">
+        <div class="box">
+            <div class="box-icon">
+                <img src="https://cdn4.iconfinder.com/data/icons/e-commerce-and-shopping-3/500/checked-checklist-notepad-128.png" alt=""/>
+            </div>
+            <div class="info">
+                <h4 class="text-center">{{="Create new device" if action_add else "Edit device"}}</h4>
+                <form method="post">
+                    <input name="action" type="hidden" value="{{=action}}">
+                    <div class="form-group">
+                        <label for="inputName">Name</label>
+                        <input name="name" type="text" class="form-control" id="inputName" placeholder="Enter name" value="{{="" if action_add else device_info.name}}" required>
+                        <small class="form-text text-muted">This is a memorable name for this device. E.g. Gernot's Room Light</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="deviceTypeSelect">Device type</label>
+                        <select name="device_type" class="form-control custom-select" id="deviceTypeSelect">
+                        {{for device in devices:}}
+                        <option value="{{=device.id}}" {{="" if action_add else "selected" if device.id == device_info.device_type else ""}}>{{=device.name}}</option>
+                        {{pass}}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="textAreaDescription">Description</label>
+                        <textarea class="form-control" name="description" rows="3" required>{{="" if action_add else device_info.description}}</textarea>
+                    </div>
+                    <div class="center">
+                        <button type="submit" class="btn btn-primary">{{="Create" if action_add else "Update"}}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{{pass}}
