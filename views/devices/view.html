@@ -4,7 +4,11 @@
 {{include 'toggle_switch.html'}}
 
 <script>
+var refreshRate = 3; //seconds
+var graphDataInterval;
+
 $(function() {
+    var powerCheckBox = $("#checkBox");
     var ctx = $("#myChart");
 
     var myLineChart = new Chart(ctx, {
@@ -55,51 +59,52 @@ $(function() {
         }
     });
 
-    var counter = 0;
-
-    $(ctx).on("click", function() {
-        setInterval(function() {
-            myLineChart.data.datasets[0].data.splice(0, 1);
-            myLineChart.data.labels.splice(0, 1);
-
-            myLineChart.data.datasets[0].data.push(random());
-            myLineChart.data.labels.push("new " + counter++);
-            myLineChart.update();
-
-        }, 2000);
-    });
-
-    function random() {
-        return Math.floor((Math.random() * 100) + 60);
+    if (powerCheckBox.bootstrapSwitch("state")) {
+        startTimer();
     }
 
-    $.ajax({
-        url: "/things/api/device_data/",
-        type: "GET",
-        beforeSend: function() {
-            //Code here
-            return true;
-        },
-        success: function(json) {
-            var responseJson = null;
-
-            try {
-                responseJson = JSON.parse(json);
-            } catch (ex) {
-                console.log(ex);
-            }
-        },
-        error: function(xhr, textStatus, errorThrown) {
-            var alertMsg = "A " + xhr.status + "<strong>[" + xhr.statusText + "]</strong> network error has occurred";
-        },
-        complete: function() {}
+    powerCheckBox.on('switchChange.bootstrapSwitch', function(event, state) {
+        if (state) {
+            startTimer();
+        } else {
+            endTimer();
+        }
     });
+
+    function startTimer() {
+        graphDataInterval = setInterval(function() {
+            var url = "/things/api/device_data/?user_device_id=" + $("#user_device_id").val();
+            $.getJSON(url, function(json) {
+                $.each(json, function(k, v) {
+                    if (myLineChart.data.datasets[0].data.length >= 20) {
+                        myLineChart.data.datasets[0].data.splice(0, 1);
+                        myLineChart.data.labels.splice(0, 1);
+                    }
+
+                    $.each($.parseJSON(v.raw_data), function(key, value) {
+                        if (key === "temperature") {
+                            myLineChart.data.datasets[0].data.push(value);
+                        }
+                    });
+
+                    myLineChart.data.labels.push(v.created_at);
+                    myLineChart.update();
+                });
+            });
+        }, refreshRate * 1000);
+    }
+
+    function endTimer() {
+        clearInterval(graphDataInterval);
+    }
 });
 </script>
 
 {{if user_device is None:}}
-<div class="alert alert-danger" role="alert">Sorry, either you're not authorized to view this device or the device you're looking for does not exist.</div>
+    <div class="alert alert-danger" role="alert">Sorry, either you're not authorized to view this device or the device you're looking for does not exist.</div>
 {{else:}}
+<input type="hidden" id="user_device_id" value="{{=user_device.id}}">
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-2">
@@ -108,7 +113,7 @@ $(function() {
                 <div class="panel-body">
                     <label>Power </label>
                     <p>
-                        <input type="checkbox" data-user-device-id="{{=user_device.id}}" data-inverse="true" data-on-color="success" data-off-color="danger" data-size="mini" {{='checked' if user_device.is_on else ''}}>
+                        <input id="checkBox" type="checkbox" data-user-device-id="{{=user_device.id}}" data-inverse="true" data-on-color="success" data-off-color="danger" data-size="mini" {{='checked' if user_device.is_on else ''}}>
                     </p>
                 </div>
             </div>

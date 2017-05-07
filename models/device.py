@@ -9,6 +9,7 @@ db.define_table(
     Field('name'),
     Field('description', 'text'),
     Field('picture', 'upload', autodelete=True),
+    Field('created_at', default=request.now, writable=False),
     format = '%(name)s', singular='Device', plural='Devices')
 
 db.devices.name.requires = IS_NOT_EMPTY()
@@ -22,7 +23,7 @@ db.define_table(
     Field('device_type', db.devices),
     Field('description', 'text'),
     Field('is_on', 'boolean', default=False),
-    Field('created_at', 'datetime', default=request.now, writable=False, readable=False),
+    Field('created_at', 'datetime', default=request.now, writable=False),
     format = '%(name)s', singular='User device', plural='User devices')
 
 db.user_device.name.requires = IS_NOT_EMPTY()
@@ -33,10 +34,10 @@ db.define_table(
     'device_data',
     Field('user_device_id', db.user_device, writable=False, readable=False),
     Field('raw_data', 'text'),
-    Field('created_at', 'datetime', default=request.now, writable=False, readable=False))
+    Field('created_at', 'datetime', default=request.now, writable=False))
 
 db.device_data.user_device_id.requires = IS_IN_DB(db, db.user_device.id)
-db.device_data.raw_data.requires = IS_JSON()
+#db.device_data.raw_data.requires = IS_JSON()
 
 #db.devices.drop()
 #db.user_device.drop()

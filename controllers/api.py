@@ -4,7 +4,7 @@ def devices():
     return db(db.devices).select().as_json()
 
 def device_data():
-    return db(db.device_data.user_device_id == 1).select(db.device_data.raw_data).as_json()
+    return db(db.device_data.user_device_id == request.vars.user_device_id).select(db.device_data.raw_data, db.device_data.created_at).as_json()
 
 def active_devices():
     return db(db.user_device.is_on == True).select().as_json()
