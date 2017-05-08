@@ -3,18 +3,14 @@
 def devices():
     return db(db.devices).select().as_json()
 
-def device_data():
-    return db(db.device_data.user_device_id == request.vars.user_device_id).select(db.device_data.raw_data, db.device_data.created_at).as_json()
-
 def active_devices():
     return db(db.user_device.is_on == True).select().as_json()
 
-def simulate_device():
-    return False
+@auth.requires_login()
+def device_data():
+    return db(db.device_data.user_device_id == request.vars.user_device_id).select(db.device_data.raw_data, db.device_data.created_at).as_json()
 
-def test_method():
-    return False
-
+@auth.requires_login()
 def device_power():
     try:
         device_id = request.post_vars.device_id
@@ -27,6 +23,7 @@ def device_power():
 
     raise HTTP(200, "OK")
 
+@auth.requires_login()
 def device_delete():
     try:
         device_id = request.post_vars.device_id

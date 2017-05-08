@@ -21,7 +21,7 @@
         deviceHref = URL('devices', 'view', args= row.user_device.id)
         checked_property = 'checked' if row.user_device.is_on else ''
     }}
-    <div id="{{=row.user_device.id}}" class="col-md-3">
+    <div id="{{=row.user_device.id}}" class="col-sm-2 col-md-3">
         <div class="thumbnail">
             <button type="button" data-device-id="{{=row.user_device.id}}" class="close">&times;</button>
             <a href="{{=deviceHref}}">
