@@ -173,6 +173,20 @@ $(function() {
         }, refreshRate * 1000);
     }
 
+    function displayNextData() {
+        if (dataQueue.length != 0) {
+            if (lineChart1.data.datasets[0].data.length >= 20) {
+                lineChart1.data.datasets[0].data.splice(0, 1);
+                lineChart1.data.labels.splice(0, 1);
+            }
+
+            var d = dataQueue.shift();
+
+            lineChart1.data.labels.push(v.created_at);
+            lineChart1.update();
+        }
+    }
+
     function epoch() {
         return Math.round(new Date().getTime() / 1000);
     }

@@ -4,7 +4,12 @@ def devices():
     return db(db.devices).select().as_json()
 
 def active_devices():
-    return db(db.user_device.is_on == True).select().as_json()
+    devices = db(db.user_device.is_on == True).select(db.user_device.id, db.user_device.device_type)
+
+    for device in devices:
+        device.type = db(db.devices.id == device.device_type).select(db.devices.name).first().name
+
+    return devices.as_json()
 
 @auth.requires_login()
 def device_data():
