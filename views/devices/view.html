@@ -8,6 +8,7 @@ var refreshRate = 3; //seconds
 var graphDataInterval;
 var lineChart1;
 var lineChart2;
+var dataQueue = [];
 
 String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
@@ -143,6 +144,12 @@ $(function() {
                     }
 
                     $("#stats-container p").slice(1).remove();
+                    dataQueue.push(json);
+
+                    if (dataQueue.length >= 5) {
+                        var d = dataQueue.shift();
+                    }
+
                     $.each($.parseJSON(v.raw_data), function(key, value) {
                         //°c
 
@@ -161,6 +168,8 @@ $(function() {
                     lineChart1.update();
                 });
             });
+
+            //TODO insert code to handle dequeue here
         }, refreshRate * 1000);
     }
 
