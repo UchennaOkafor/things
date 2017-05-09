@@ -21,14 +21,17 @@ def form():
     if request.env.request_method == "POST":
         if request.post_vars.action == "Add":
             try:
-                db.user_device.insert(user_id = auth.user.id, device_type = request.post_vars.device_type, name = request.post_vars.name, description = request.post_vars.description)
+                device_id = db.user_device.insert(user_id = auth.user.id, device_type = request.post_vars.device_type,
+                        name = request.post_vars.name, description = request.post_vars.description)
+                db.device_data.insert(user_device_id = device_id)
                 response.flash = "Device created successfully"
             except Exception as ex:
                 response.flash = "Error creating device. Try again"
         elif request.post_vars.action == "Edit":
             try:
                 row = db(db.user_device.id == id).select().first()
-                row.update_record(device_type = request.post_vars.device_type, name = request.post_vars.name, description = request.post_vars.description)
+                row.update_record(device_type = request.post_vars.device_type,
+                        name = request.post_vars.name, description = request.post_vars.description)
                 device_info = db(db.user_device.id == id).select().first()
                 response.flash = "Device updated successfully"
             except Exception as ex:

@@ -1,7 +1,18 @@
 # -*- coding: utf-8 -*-
+import json
 
-def devices():
-    return db(db.devices).select().as_json()
+#if device is on
+#accept json
+
+def simulate():
+    try:
+        for jsonObj in json.loads(request.body.read()):
+            row = db(db.device_data.user_device_id == jsonObj["user_device_id"]).select().first()
+            row.update_record(raw_data = jsonObj["raw_data"], updated_at = request.now)
+    except Exception as ex:
+        raise HTTP(500, "BAD REQUEST")
+
+    raise HTTP(200, "OK")
 
 def active_devices():
     devices = db(db.user_device.is_on == True).select(db.user_device.id, db.user_device.device_type)
@@ -13,7 +24,8 @@ def active_devices():
 
 @auth.requires_login()
 def device_data():
-    return db(db.device_data.user_device_id == request.vars.user_device_id).select(db.device_data.raw_data, db.device_data.created_at).as_json()
+    return db(db.device_data.user_device_id == request.vars.user_device_id) \
+             .select(db.device_data.raw_data, db.device_data.updated_at).first().as_json()
 
 @auth.requires_login()
 def device_power():
@@ -37,6 +49,3 @@ def device_delete():
         raise HTTP(500, "BAD REQUEST")
 
     raise HTTP(200, "OK")
-
-#if device is on
-#accept json

@@ -33,12 +33,12 @@ db.user_device.device_type.requires = IS_IN_DB(db, db.devices.id)
 db.define_table(
     'device_data',
     Field('user_device_id', db.user_device, writable=False, readable=False),
-    Field('raw_data', 'text'),
-    Field('created_at', 'datetime', default=request.now, writable=False))
+    Field('raw_data', 'text', default = "{}"),
+    Field('updated_at', 'datetime', default=request.now, writable=False))
 
 db.device_data.user_device_id.requires = IS_IN_DB(db, db.user_device.id)
 #db.device_data.raw_data.requires = IS_JSON()
 
 #db.devices.drop()
-#db.user_device.drop()
-#db.device_data.drop()
+#db.user_device.truncate()
+#db.device_data.truncate()

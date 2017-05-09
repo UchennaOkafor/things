@@ -4,21 +4,19 @@
 {{include 'toggle_switch.html'}}
 
 <script>
-var refreshRate = 3; //seconds
+var refreshRate = 2; //seconds
 var graphDataInterval;
-var lineChart1;
-var lineChart2;
-var dataQueue = [];
+var lineChart1, lineChart2;
+//" °c"
 
 String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
 $(function() {
-
     initializeCheckBox();
-    initializeChart1();
-    initializeChart2();
+    lineChart1 = initializeChart("#line-chart-1");
+    lineChart2 = initializeChart("#line-chart-2");
 
     function initializeCheckBox() {
         var powerCheckBox = $("#checkBox");
@@ -35,12 +33,11 @@ $(function() {
         });
     }
 
-    function initializeChart1() {
+    function initializeChart(canvasId) {
         var chartConfig = {
             type: 'line',
             data: {
                 datasets: [{
-                    label: "Temperature °c",
                     fill: false,
                     lineTension: 0.1,
                     backgroundColor: "rgba(75,192,192,0.4)",
@@ -68,8 +65,7 @@ $(function() {
                             beginAtZero: true
                         },
                         scaleLabel: {
-                            display: true,
-                            labelString: 'Temperature'
+                            display: true
                         }
                     }],
                     xAxes: [{
@@ -81,114 +77,57 @@ $(function() {
                 }
             }
         };
-        lineChart1 = new Chart($("#line-chart-1"), chartConfig);
-    }
 
-    function initializeChart2() {
-        var chartConfig = {
-            type: 'line',
-            data: {
-                datasets: [{
-                    label: "Temperature °c",
-                    fill: false,
-                    lineTension: 0.1,
-                    backgroundColor: "rgba(75,192,192,0.4)",
-                    borderColor: "rgba(75,192,192,1)",
-                    borderCapStyle: 'butt',
-                    borderDash: [],
-                    borderDashOffset: 0.0,
-                    borderJoinStyle: 'miter',
-                    pointBorderColor: "rgba(75,192,192,1)",
-                    pointBackgroundColor: "#fff",
-                    pointBorderWidth: 1,
-                    pointHoverRadius: 5,
-                    pointHoverBackgroundColor: "rgba(75,192,192,1)",
-                    pointHoverBorderColor: "rgba(220,220,220,1)",
-                    pointHoverBorderWidth: 2,
-                    pointRadius: 1,
-                    pointHitRadius: 10,
-                    spanGaps: true,
-                }]
-            },
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        },
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'Temperature'
-                        }
-                    }],
-                    xAxes: [{
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'Time'
-                        }
-                    }],
-                }
-            }
-        };
-        lineChart2 = new Chart($("#line-chart-2"), chartConfig);
+        return new Chart($(canvasId), chartConfig);
     }
 
     function startTimer() {
         graphDataInterval = setInterval(function() {
-            var data = {"user_device_id" : $("#user_device_id").val(), ts: epoch()};
+            var data = {"user_device_id" : $("#user_device_id").val()};
             $.getJSON("/things/api/device_data/", data, function(json) {
-                $.each(json, function(k, v) {
-                    if (lineChart1.data.datasets[0].data.length >= 20) {
-                        lineChart1.data.datasets[0].data.splice(0, 1);
-                        lineChart1.data.labels.splice(0, 1);
-                    }
-
-                    $("#stats-container p").slice(1).remove();
-                    dataQueue.push(json);
-
-                    if (dataQueue.length >= 5) {
-                        var d = dataQueue.shift();
-                    }
-
-                    $.each($.parseJSON(v.raw_data), function(key, value) {
-                        //°c
-
-                        var b = $("<b>" + key.capitalize() + ": </b>");
-                        var c = $("<code>" + value + "</code>");
-                        var p = $("<p></p>").append([b, c]);
-
-                        $("#stats-container").append(p);
-
-                        if (key === "temperature") {
-                            lineChart1.data.datasets[0].data.push(value);
-                        }
-                    });
-
-                    lineChart1.data.labels.push(v.created_at);
-                    lineChart1.update();
-                });
+                displayJson(json);
             });
-
-            //TODO insert code to handle dequeue here
         }, refreshRate * 1000);
     }
 
-    function displayNextData() {
-        if (dataQueue.length != 0) {
-            if (lineChart1.data.datasets[0].data.length >= 20) {
-                lineChart1.data.datasets[0].data.splice(0, 1);
-                lineChart1.data.labels.splice(0, 1);
-            }
+    function displayJson(json) {
+        var max = 12;
+        var first = true;
+        $("#stats-container p").slice(1).remove();
 
-            var d = dataQueue.shift();
-
-            lineChart1.data.labels.push(v.created_at);
-            lineChart1.update();
+        if (lineChart1.data.datasets[0].data.length >= max) {
+            lineChart1.data.datasets[0].data.splice(0, 1);
+            lineChart1.data.labels.splice(0, 1);
         }
-    }
 
-    function epoch() {
-        return Math.round(new Date().getTime() / 1000);
+        if (lineChart2.data.datasets[0].data.length >= max) {
+            lineChart2.data.datasets[0].data.splice(0, 1);
+            lineChart2.data.labels.splice(0, 1);
+        }
+
+        $.each($.parseJSON(json.raw_data), function(key, value) {
+            var b = $("<b>" + key.capitalize() + ": </b>");
+            var c = $("<code>" + value + "</code>");
+            var p = $("<p></p>").append([b, c]);
+
+            $("#stats-container").append(p);
+
+            if (first) {
+                lineChart1.data.datasets[0].label = key.capitalize();
+                lineChart1.options.scales.yAxes[0].scaleLabel.labelString = key.capitalize();
+                lineChart1.data.datasets[0].data.push(value);
+                first = false;
+            } else {
+                lineChart2.data.datasets[0].label = key.capitalize();
+                lineChart2.options.scales.yAxes[0].scaleLabel.labelString = key.capitalize();
+                lineChart2.data.datasets[0].data.push(value);
+            }
+        });
+
+        lineChart1.data.labels.push(json.updated_at);
+        lineChart2.data.labels.push(json.updated_at);
+        lineChart1.update();
+        lineChart2.update();
     }
 
     function endTimer() {
