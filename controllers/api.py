@@ -7,12 +7,15 @@ import json
 def simulate():
     try:
         for jsonObj in json.loads(request.body.read()):
-            row = db(db.device_data.user_device_id == jsonObj["user_device_id"]).select().first()
-            row.update_record(raw_data = jsonObj["raw_data"], updated_at = request.now)
+            try:
+                row = db(db.device_data.user_device_id == jsonObj["user_device_id"]).select().first()
+                row.update_record(raw_data = jsonObj["raw_data"], updated_at = request.now)
+            except Exception:
+                pass
     except Exception as ex:
         raise HTTP(500, "BAD REQUEST")
 
-    raise HTTP(200, "OK")
+    return active_devices()
 
 def active_devices():
     devices = db(db.user_device.is_on == True).select(db.user_device.id, db.user_device.device_type)

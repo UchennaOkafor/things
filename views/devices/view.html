@@ -4,13 +4,20 @@
 {{include 'toggle_switch.html'}}
 
 <script>
-var refreshRate = 2; //seconds
+var refreshRate = 3; //seconds
 var graphDataInterval;
 var lineChart1, lineChart2;
-//" °c"
+var lastTimeStamp =  "";
+var maxGraphData = 12;
 
 String.prototype.capitalize = function() {
-    return this.charAt(0).toUpperCase() + this.slice(1);
+    var words = this.split("_");
+
+    for (var i = 0; i < words.length; i++) {
+        words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
+    }
+
+    return words.join(" ");
 }
 
 $(function() {
@@ -38,6 +45,7 @@ $(function() {
             type: 'line',
             data: {
                 datasets: [{
+                    label: "",
                     fill: false,
                     lineTension: 0.1,
                     backgroundColor: "rgba(75,192,192,0.4)",
@@ -65,13 +73,14 @@ $(function() {
                             beginAtZero: true
                         },
                         scaleLabel: {
-                            display: true
+                            display: true,
+                            labelString: ""
                         }
                     }],
                     xAxes: [{
                         scaleLabel: {
                             display: true,
-                            labelString: 'Time'
+                            labelString: "Time"
                         }
                     }],
                 }
@@ -91,43 +100,34 @@ $(function() {
     }
 
     function displayJson(json) {
-        var max = 12;
-        var first = true;
+        if (lastTimeStamp == json.updated_at) {
+            return;
+        }
+
+        var times = 1;
         $("#stats-container p").slice(1).remove();
-
-        if (lineChart1.data.datasets[0].data.length >= max) {
-            lineChart1.data.datasets[0].data.splice(0, 1);
-            lineChart1.data.labels.splice(0, 1);
-        }
-
-        if (lineChart2.data.datasets[0].data.length >= max) {
-            lineChart2.data.datasets[0].data.splice(0, 1);
-            lineChart2.data.labels.splice(0, 1);
-        }
-
         $.each($.parseJSON(json.raw_data), function(key, value) {
             var b = $("<b>" + key.capitalize() + ": </b>");
-            var c = $("<code>" + value + "</code>");
+            var c = $("<code>" + value.toFixed(1) + "</code>");
             var p = $("<p></p>").append([b, c]);
 
             $("#stats-container").append(p);
 
-            if (first) {
-                lineChart1.data.datasets[0].label = key.capitalize();
-                lineChart1.options.scales.yAxes[0].scaleLabel.labelString = key.capitalize();
-                lineChart1.data.datasets[0].data.push(value);
-                first = false;
-            } else {
-                lineChart2.data.datasets[0].label = key.capitalize();
-                lineChart2.options.scales.yAxes[0].scaleLabel.labelString = key.capitalize();
-                lineChart2.data.datasets[0].data.push(value);
-            }
-        });
+            var targetChart = times++ == 1 ? lineChart1 : lineChart2;
 
-        lineChart1.data.labels.push(json.updated_at);
-        lineChart2.data.labels.push(json.updated_at);
-        lineChart1.update();
-        lineChart2.update();
+            if (targetChart.data.datasets[0].data.length >= maxGraphData) {
+                targetChart.data.datasets[0].data.splice(0, 1);
+                targetChart.data.labels.splice(0, 1);
+            }
+
+            targetChart.data.datasets[0].label = key.capitalize();
+            targetChart.options.scales.yAxes[0].scaleLabel.labelString = key.capitalize();
+            targetChart.data.datasets[0].data.push(value.toFixed(1));
+
+            targetChart.data.labels.push(json.updated_at);
+            targetChart.update();
+            lastTimeStamp = json.updated_at;
+        });
     }
 
     function endTimer() {
