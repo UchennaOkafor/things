@@ -3,6 +3,10 @@
 {{include 'chart.html'}}
 {{include 'toggle_switch.html'}}
 
+{{if user_device is None:}}
+    <div class="alert alert-danger" role="alert">Sorry, either you're not authorized to view this device or the device you're looking for does not exist.</div>
+{{else:}}
+
 <script>
 var refreshRate = 3; //seconds
 var graphDataInterval;
@@ -134,11 +138,9 @@ $(function() {
         clearInterval(graphDataInterval);
     }
 });
+
 </script>
 
-{{if user_device is None:}}
-    <div class="alert alert-danger" role="alert">Sorry, either you're not authorized to view this device or the device you're looking for does not exist.</div>
-{{else:}}
 <input type="hidden" id="user_device_id" value="{{=user_device.id}}">
 
 <div class="container-fluid">
