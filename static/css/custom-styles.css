@@ -1,9 +1,9 @@
-.product-icon {
-    max-width: 150px;
-    max-height: 170px;
+.device-icon {
+    max-width: 124px;
+    max-height: 124px;
 
-    min-width: 150px;
-    min-height: 170px;
+    min-width: 124px;
+    min-height: 124px;
 }
 
 .cropped-text {
@@ -11,14 +11,6 @@
     width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.review-icon {
-    max-width: 72px;
-    max-height: 72px;
-
-    min-width: 72px;
-    min-height: 72px;
 }
 
 /*Full credits to the owner of the card css, full link below*/

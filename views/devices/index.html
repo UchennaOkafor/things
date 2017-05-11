@@ -21,11 +21,11 @@
         deviceHref = URL('devices', 'view', args= row.user_device.id)
         checked_property = 'checked' if row.user_device.is_on else ''
     }}
-    <div id="{{=row.user_device.id}}" class="col-sm-2 col-md-3">
+    <div id="{{=row.user_device.id}}" class="col-sm-3 col-md-3">
         <div class="thumbnail">
             <button type="button" data-device-id="{{=row.user_device.id}}" class="close">&times;</button>
             <a href="{{=deviceHref}}">
-            <img class="product-icon" src="{{=URL('default', 'download', args=row.devices.picture)}}" alt="Device image" />
+            <img class="device-icon" src="{{=URL('default', 'download', args=row.devices.picture)}}" alt="Device image" />
             </a>
             <div class="caption">
                 <h3 class="cropped-text">{{=row.user_device.name}}</h3>
@@ -36,10 +36,10 @@
                 </p>
                 <p>
                     <a class="btn btn-warning" href="{{=URL('devices', 'form', args = row.user_device.id)}}">
-                    <span class="glyphicon glyphicon-edit"></span> Edit
+                        <span class="glyphicon glyphicon-edit"></span> Edit
                     </a>
                     <a class="btn btn-default right" href="{{=deviceHref}}">
-                    <span class="glyphicon glyphicon-menu-right"></span> View
+                        <span class="glyphicon glyphicon-menu-right"></span>
                     </a>
                 </p>
             </div>

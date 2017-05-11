@@ -49,4 +49,28 @@ def view():
     user_device = db((db.user_device.id == id) & (db.user_device.user_id == auth.user.id)).select()
     user_device = user_device.first() if len(user_device) == 1 else None
 
-    return dict(user_device = user_device)
+    return dict(user_device = user_device, units = get_measurement_units(user_device))
+
+def get_measurement_units(user_device):
+    if user_device is None:
+        return None
+
+    device_type = db(db.devices.id == user_device.device_type).select().first().name
+
+    units1 = ""
+    units2 = ""
+
+    if device_type == "Lightbulb":
+        units1 = "Lux"
+        units2 = "Watts"
+    elif device_type == "Thermostat":
+        units1 = "°C"
+        units2 = "%"
+    elif device_type == "Fridge":
+        units1 = "°C"
+        units2 = "°C"
+    elif device_type == "Smart Meter":
+        units1 = "Joules"
+        units2 = "kWh"
+
+    return {"units_1": units1, "units_2": units2}

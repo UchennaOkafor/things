@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
 
-#if device is on
-#accept json
-
 def simulate():
     try:
         for jsonObj in json.loads(request.body.read()):

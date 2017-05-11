@@ -1,9 +1,9 @@
-{{response.title = 'iThings - 404' if user_device is None else user_device.name}}
+{{response.title = 'ioThings - 404' if user_device is None else user_device.name}}
 {{extend 'layout.html'}}
 {{include 'chart.html'}}
 {{include 'toggle_switch.html'}}
 
-{{if user_device is None:}}
+{{if user_device is None and units is None:}}
     <div class="alert alert-danger" role="alert">Sorry, either you're not authorized to view this device or the device you're looking for does not exist.</div>
 {{else:}}
 
@@ -13,19 +13,13 @@ var graphDataInterval;
 var lineChart1, lineChart2;
 var lastTimeStamp =  "";
 var maxGraphData = 12;
-
-String.prototype.capitalize = function() {
-    var words = this.split("_");
-
-    for (var i = 0; i < words.length; i++) {
-        words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
-    }
-
-    return words.join(" ");
-}
+var units1 = "", units2 = "";
 
 $(function() {
     initializeCheckBox();
+    units1 = $("#units-1").val();
+    units2 = $("#units-2").val();
+
     lineChart1 = initializeChart("#line-chart-1");
     lineChart2 = initializeChart("#line-chart-2");
 
@@ -110,22 +104,24 @@ $(function() {
 
         var times = 1;
         $("#stats-container p").slice(1).remove();
+
         $.each($.parseJSON(json.raw_data), function(key, value) {
-            var b = $("<b>" + key.capitalize() + ": </b>");
-            var c = $("<code>" + value.toFixed(1) + "</code>");
-            var p = $("<p></p>").append([b, c]);
-
-            $("#stats-container").append(p);
-
             var targetChart = times++ == 1 ? lineChart1 : lineChart2;
+            var targetUnits = targetChart == lineChart1 ? units1 : units2;
+            var labelValue = key.capitalize() + " " + "(" + targetUnits + ")";
+
+            var b = $("<b>" + key.capitalize() + ": </b>");
+            var c = $("<code>" + value.toFixed(1) + " " + targetUnits + "</code>");
+            var p = $("<p></p>").append([b, c]);
+            $("#stats-container").append(p);
 
             if (targetChart.data.datasets[0].data.length >= maxGraphData) {
                 targetChart.data.datasets[0].data.splice(0, 1);
                 targetChart.data.labels.splice(0, 1);
             }
 
-            targetChart.data.datasets[0].label = key.capitalize();
-            targetChart.options.scales.yAxes[0].scaleLabel.labelString = key.capitalize();
+            targetChart.data.datasets[0].label = labelValue;
+            targetChart.options.scales.yAxes[0].scaleLabel.labelString = labelValue;
             targetChart.data.datasets[0].data.push(value.toFixed(1));
 
             targetChart.data.labels.push(json.updated_at);
@@ -137,11 +133,24 @@ $(function() {
     function endTimer() {
         clearInterval(graphDataInterval);
     }
+
+    String.prototype.capitalize = function() {
+        var words = this.split("_");
+
+        for (var i = 0; i < words.length; i++) {
+            words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
+        }
+
+        return words.join(" ");
+    }
 });
 
 </script>
-
-<input type="hidden" id="user_device_id" value="{{=user_device.id}}">
+<div class="hidden_attributes">
+    <input type="hidden" id="units-1" value="{{=units["units_1"]}}">
+    <input type="hidden" id="units-2" value="{{=units["units_2"]}}">
+    <input type="hidden" id="user_device_id" value="{{=user_device.id}}">
+</div>
 
 <div class="container-fluid">
     <div class="row">
