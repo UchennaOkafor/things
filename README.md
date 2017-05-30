@@ -2,7 +2,7 @@
 A web based IoT dashboard which operates in conjunction with the [IoTSimulator](https://github.com/uche1/IoTSimulator) desktop application. The aim of the web based application is to allow users to manage the different IoT devices that is based in their home and graphically view live device data.
 
 ### Authentication
-The site includes the basic authentication modules from the web2py scaffolding.
+The site includes the basic authentication modules from the web2py framework.
 
 ### Create/Edit/Delete Device
 The user is able to create, edit and delete devices<br>
